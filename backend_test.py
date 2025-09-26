@@ -16,10 +16,16 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Test Configuration
-BASE_URL = "https://sub-range-lead.preview.emergentagent.com/api"
-TEST_KEYWORDS = ["gaming", "tech"]  # As per review request
-MAX_VIDEOS_PER_KEYWORD = 100  # As per review request
-MAX_CHANNELS = 50  # As per review request
+BASE_URL = "https://22083267-066e-454b-ac48-74f541624b13.preview.emergentagent.com/api"
+TEST_KEYWORDS = ["crypto trading", "investment tips"]  # As per review request
+MAX_VIDEOS_PER_KEYWORD = 2000  # As per review request
+MAX_CHANNELS = 1000  # As per review request
+
+# New filtering parameters to test
+DEFAULT_SUBSCRIBER_MIN = 10000
+DEFAULT_SUBSCRIBER_MAX = 1000000
+DEFAULT_CONTENT_FREQUENCY_MIN = 0.14
+DEFAULT_CONTENT_FREQUENCY_MAX = 2.0
 
 class BackendTester:
     def __init__(self):
