@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 # Test Configuration
 BASE_URL = "https://youtube-mailer.preview.emergentagent.com/api"
-TEST_KEYWORDS = ["investment tips", "trading signals"]  # Updated as per review request
-MAX_VIDEOS_PER_KEYWORD = 25  # As per review request
-MAX_CHANNELS = 5  # As per review request
+TEST_KEYWORDS = ["gaming", "tech"]  # As per review request
+MAX_VIDEOS_PER_KEYWORD = 100  # As per review request
+MAX_CHANNELS = 50  # As per review request
 
 class BackendTester:
     def __init__(self):
