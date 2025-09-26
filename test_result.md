@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Build a YouTube Lead Generation + Outreach Automation Platform that discovers YouTube creators, extracts business emails, analyzes content/engagement, and sends AI-powered personalized outreach emails with Google Sheets integration for lead tracking."
+user_problem_statement: "Build a YouTube Lead Generation + Outreach Automation Platform that discovers YouTube creators, extracts business emails, analyzes content/engagement, and sends AI-powered personalized outreach emails with Google Sheets integration for lead tracking. Added subscriber range and content frequency filtering capabilities."
 
 backend:
   - task: "YouTube API Integration & Channel Discovery"
