@@ -726,15 +726,23 @@ class BackendTester:
             return False
 
     async def run_comprehensive_tests(self):
-        """Run all backend tests in sequence with focus on Playwright improvements"""
-        logger.info("🚀 Starting comprehensive backend testing for UPDATED YouTube Lead Generation Platform...")
-        logger.info("🎯 FOCUS: Testing new Playwright-based email extraction improvements")
+        """Run all backend tests in sequence with focus on NEW filtering features"""
+        logger.info("🚀 Starting comprehensive backend testing for YouTube Lead Generation Platform...")
+        logger.info("🎯 FOCUS: Testing NEW subscriber range and content frequency filtering features")
         
         # Test 1: API Root
         await self.test_api_root()
         
-        # Test 2: Start Lead Generation with updated parameters
+        # Test 2: Test New Filtering Parameters (before main test)
+        logger.info("🔧 Testing new filtering parameter acceptance...")
+        await self.test_subscriber_range_filtering_parameters()
+        await self.test_content_frequency_filtering_parameters()
+        await self.test_edge_case_filtering_parameters()
+        await self.test_content_frequency_calculation_logic()
+        
+        # Test 3: Start Lead Generation with NEW filtering parameters
         logger.info(f"📋 Test Configuration: Keywords={TEST_KEYWORDS}, Max Videos={MAX_VIDEOS_PER_KEYWORD}, Max Channels={MAX_CHANNELS}")
+        logger.info(f"🔍 Filtering: Subscribers {DEFAULT_SUBSCRIBER_MIN}-{DEFAULT_SUBSCRIBER_MAX}, Frequency {DEFAULT_CONTENT_FREQUENCY_MIN}-{DEFAULT_CONTENT_FREQUENCY_MAX} videos/week")
         status_id = await self.test_lead_generation_start()
         if not status_id:
             logger.error("❌ Cannot continue testing without valid status ID")
@@ -742,25 +750,31 @@ class BackendTester:
         
         self.processing_status_id = status_id
         
-        # Test 3: Monitor Processing Status (with focus on email extraction)
+        # Test 4: Monitor Processing Status (with focus on filtering)
         final_status = await self.test_processing_status(status_id)
         
-        # Test 4: Check Main Leads (with email extraction validation)
+        # Test 5: Check Main Leads (with filtering validation)
         main_leads = await self.test_main_leads_endpoint()
         
-        # Test 5: Check No-Email Leads (validate branching logic)
+        # Test 6: Check No-Email Leads (validate branching logic)
         no_email_leads = await self.test_no_email_leads_endpoint()
         
-        # Test 6: Validate Playwright Email Extraction Improvements
+        # Test 7: NEW - Validate Content Frequency Data Storage
+        await self.test_content_frequency_data_validation(main_leads, no_email_leads)
+        
+        # Test 8: NEW - Validate Filtering Logic Effectiveness
+        await self.test_filtering_logic_validation(final_status)
+        
+        # Test 9: Validate Playwright Email Extraction (existing)
         await self.test_playwright_email_extraction_validation(main_leads, no_email_leads)
         
-        # Test 7: Test Add Email Functionality
+        # Test 10: Test Add Email Functionality
         await self.test_add_email_endpoint(no_email_leads)
         
-        # Test 8: Test Discord Notifications
+        # Test 11: Test Discord Notifications
         await self.test_discord_notifications()
         
-        # Test 9: End-to-End Workflow Validation
+        # Test 12: End-to-End Workflow Validation
         await self.test_end_to_end_workflow(final_status, main_leads, no_email_leads)
         
         # Final Summary
