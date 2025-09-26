@@ -477,7 +477,7 @@ async def generate_ai_outreach_email(channel_data: Dict, video_data: Dict, comme
             "commentCount": len(channel_data.get('comments_analyzed', []))
         }
         
-        # Construct the prompt
+        # Construct the prompt with the user's specific video editing template
         prompt = f"""Using the following data about a YouTube creator's channel, generate a personalized outreach email from the template given at last. Fill the blanks like creator name etc., and change the lines of the email as per the details for personalization. Make sure to change the P.S. sentence according to the comments. Send the subject line separately. Send HTML and text forms of the copy. Base the email on these details:
 
 - Creator Name: {ai_input['creatorName']}
@@ -490,6 +490,11 @@ async def generate_ai_outreach_email(channel_data: Dict, video_data: Dict, comme
 - Top Viewer Comment by {ai_input['topCommentAuthor']}: "{ai_input['topCommentText']}"
 - Comment Count: {ai_input['commentCount']}
 
+Editing/SFX/Graphics micro‑audit (latest video):
+- If tooling allows accessing the Recent Video URL, analyze it directly for editing, sound, pacing, motion/graphics, text readability, color/LUT consistency, transitions, and export settings. If access isn't possible, infer only from provided metadata/comments and clearly state that a quick 5‑minute audit can confirm specifics.
+- Identify up to 3 concrete issues or hypotheses with 1 actionable fix each (e.g., "dialogue compression ~3:1 with soft knee," "reduce music ducking threshold by ~2dB," "increase lower‑third contrast to meet WCAG AA, add subtle drop shadow," "smooth keyframe easing on zooms," "standardize white balance around 5600K," "export at 1080p, 16–20 Mbps").
+- Do NOT fabricate details you cannot verify from the inputs or from the video if you can open the URL.
+
 Requirements:
 - Use their actual name and recent video details.
 - Reference the top viewer comment naturally.
@@ -497,8 +502,12 @@ Requirements:
 - Include a clear call-to-action for collaboration.
 - Output ONLY valid JSON with keys: subject, plain, html.
 - Avoid fabricating any data not provided.
+- Change the P.S..... line with the error you found.
+- Its optional to write about the fix for that problem, if you doubt or fabricated the fix out of nothing DO NOT write about the fix in body
 
-Template to adapt:
+subject: I spent 3 hours analyzing your editing patterns - found something that could 10x your retention
+
+Template to adapt (fill placeholders with provided data and weave in the micro‑audit):
 
 Hey {ai_input['creatorName']},
 
@@ -514,6 +523,13 @@ For example, {ai_input['topCommentAuthor']} said: "{ai_input['topCommentText']}"
 
 You're sitting at what I call the "retention goldmine" — you have the technical skills (evidenced by viewer comments), but your current editing score suggests you're tapping into about 50% of your potential.
 
+Quick micro-audit on your latest video:
+- [Bullet 1: concise issue/hypothesis + actionable fix]
+- [Bullet 2: concise issue/hypothesis + actionable fix]
+- [Optional Bullet 3: concise issue/hypothesis + actionable fix]
+
+The gap I identified: Your audio optimization and modern pacing techniques could increase your average view duration by 40–60%. I've seen this exact pattern with 2 other channels I've worked with — one went from 45K to 180K subs in 4 months after we fixed these specific elements.
+
 I specialize in bridging this exact gap — taking technically proficient creators like you and optimizing the retention psychology behind the scenes.
 
 What I'm proposing:
@@ -526,7 +542,7 @@ I only take on 3–4 creators per quarter (quality over quantity), and your chan
 Interested in seeing what those specific optimizations could look like for your content?
 
 Best regards,
-Lead Generation Team
+Video Editing Specialist
 
 P.S. If you want, I can share a 30‑second fix that addresses the feedback in that top comment — happy to send it over regardless of whether we work together.
 
