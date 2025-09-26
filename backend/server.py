@@ -1,15 +1,16 @@
-from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks
+from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Depends, status
 from fastapi.responses import JSONResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import asyncio
 import json
 import aiohttp
@@ -29,6 +30,9 @@ from urllib.parse import urlparse, parse_qs
 import html2text
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
+import bcrypt
+import jwt
+from passlib.context import CryptContext
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
