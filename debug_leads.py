@@ -8,7 +8,7 @@ import aiohttp
 import json
 from typing import Dict, List
 
-BASE_URL = "https://youtube-mailer.preview.emergentagent.com/api"
+BASE_URL = "https://sub-range-lead.preview.emergentagent.com/api"
 
 async def debug_leads():
     """Debug lead data to understand email extraction issues"""

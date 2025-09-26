@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Test Configuration
-BASE_URL = "https://youtube-mailer.preview.emergentagent.com/api"
+BASE_URL = "https://sub-range-lead.preview.emergentagent.com/api"
 TEST_KEYWORDS = ["gaming", "tech"]  # As per review request
 MAX_VIDEOS_PER_KEYWORD = 100  # As per review request
 MAX_CHANNELS = 50  # As per review request

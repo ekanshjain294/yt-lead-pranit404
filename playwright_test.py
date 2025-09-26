@@ -12,7 +12,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://youtube-mailer.preview.emergentagent.com/api"
+BASE_URL = "https://sub-range-lead.preview.emergentagent.com/api"
 
 async def test_playwright_email_extraction():
     """Test Playwright email extraction with small focused test"""
