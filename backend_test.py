@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Test Configuration
-BASE_URL = "https://22083267-066e-454b-ac48-74f541624b13.preview.emergentagent.com/api"
+BASE_URL = "https://email-extract-tool.preview.emergentagent.com/api"
 TEST_KEYWORDS = ["crypto trading", "investment tips"]  # As per review request
 MAX_VIDEOS_PER_KEYWORD = 2000  # As per review request
 MAX_CHANNELS = 1000  # As per review request
