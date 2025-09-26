@@ -196,17 +196,37 @@ class BackendTester:
                     logger.info(f"✅ Main leads endpoint working. Found {lead_count} leads with emails")
                     
                     if lead_count > 0:
-                        # Analyze first lead for completeness
+                        # Analyze first lead for completeness including NEW content frequency field
                         first_lead = data[0]
                         required_fields = ["channel_id", "channel_title", "email", "email_status"]
+                        new_fields = ["content_frequency_weekly"]  # NEW field to check
+                        
                         missing_fields = [field for field in required_fields if not first_lead.get(field)]
+                        missing_new_fields = [field for field in new_fields if field not in first_lead]
                         
                         if missing_fields:
-                            logger.warning(f"⚠️ Missing fields in lead data: {missing_fields}")
-                            self.test_results["mongodb_operations"]["details"].append(f"Missing fields: {missing_fields}")
+                            logger.warning(f"⚠️ Missing required fields in lead data: {missing_fields}")
+                            self.test_results["mongodb_operations"]["details"].append(f"Missing required fields: {missing_fields}")
                         else:
                             logger.info("✅ Lead data structure is complete")
                             self.test_results["mongodb_operations"]["details"].append("Main leads data structure: PASS")
+                        
+                        # Check for NEW content frequency field
+                        if missing_new_fields:
+                            logger.warning(f"⚠️ Missing NEW content frequency fields: {missing_new_fields}")
+                            self.test_results["data_storage_with_frequency"]["details"].append(f"Missing frequency fields: {missing_new_fields}")
+                        else:
+                            frequency_value = first_lead.get("content_frequency_weekly")
+                            logger.info(f"✅ NEW content frequency field found: {frequency_value} videos/week")
+                            self.test_results["data_storage_with_frequency"]["details"].append(f"Content frequency field present: {frequency_value}")
+                            
+                            # Validate frequency value is reasonable
+                            if isinstance(frequency_value, (int, float)) and 0 <= frequency_value <= 20:
+                                logger.info("✅ Content frequency value is valid")
+                                self.test_results["data_storage_with_frequency"]["details"].append("Frequency value is valid")
+                            else:
+                                logger.warning(f"⚠️ Content frequency value seems invalid: {frequency_value}")
+                                self.test_results["data_storage_with_frequency"]["details"].append(f"Invalid frequency value: {frequency_value}")
                         
                         # Check for AI-generated content
                         if first_lead.get("email_subject") and first_lead.get("email_body_preview"):
