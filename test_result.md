@@ -255,14 +255,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "YouTube API Integration & Channel Discovery"
     - "Email Extraction & Web Scraping"
-    - "AI-Powered Outreach Email Generation"
-    - "SMTP Email Sending"
-    - "MongoDB Lead Storage & Management"
-  stuck_tasks: []
+  stuck_tasks: 
+    - "Email Extraction & Web Scraping"
   test_all: false
-  test_priority: "high_first"
+  test_priority: "stuck_first"
 
 agent_communication:
   - agent: "main"
