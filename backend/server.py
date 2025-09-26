@@ -83,6 +83,12 @@ class LeadGenerationRequest(BaseModel):
     keywords: List[str]
     max_videos_per_keyword: int = 2000
     max_channels: int = 1000
+    # Subscriber range filtering (default: Small 10K-100K + Medium 100K-1M)
+    subscriber_min: int = 10000  # 10K subscribers minimum
+    subscriber_max: int = 1000000  # 1M subscribers maximum
+    # Content frequency filtering (videos per week)
+    content_frequency_min: float = 0.14  # ~1 video per week minimum (1/7 days)
+    content_frequency_max: Optional[float] = 2.0  # 2 videos per week maximum
 
 class Channel(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
