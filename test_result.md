@@ -294,7 +294,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Complete End-to-End Workflow Validation"
+    - "Subscriber Range Filtering"
+    - "Content Frequency Filtering"
+    - "Subscriber & Content Frequency Filter UI"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
