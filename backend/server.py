@@ -15,6 +15,7 @@ import asyncio
 import json
 import aiohttp
 import re
+import hashlib
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
