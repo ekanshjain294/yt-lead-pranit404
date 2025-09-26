@@ -16,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Test Configuration
-BASE_URL = "https://discovery-mailer.preview.emergentagent.com/api"
+BASE_URL = "https://youtube-mailer.preview.emergentagent.com/api"
 TEST_KEYWORDS = ["investment tips", "trading signals"]  # Updated as per review request
 MAX_VIDEOS_PER_KEYWORD = 25  # As per review request
 MAX_CHANNELS = 5  # As per review request
