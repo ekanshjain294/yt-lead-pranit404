@@ -816,6 +816,24 @@ async def process_lead_generation(status_id: str, request: LeadGenerationRequest
                 if not channel_details:
                     continue
                 
+                # Apply subscriber range filter
+                subscriber_count = channel_details['subscriber_count']
+                if subscriber_count < request.subscriber_min or subscriber_count > request.subscriber_max:
+                    logger.info(f"Channel {channel_details['channel_title']} filtered out by subscriber count: {subscriber_count} (range: {request.subscriber_min}-{request.subscriber_max})")
+                    continue
+                
+                # Calculate and apply content frequency filter
+                content_frequency = await calculate_content_frequency(channel_id)
+                if content_frequency < request.content_frequency_min:
+                    logger.info(f"Channel {channel_details['channel_title']} filtered out by low content frequency: {content_frequency} videos/week (minimum: {request.content_frequency_min})")
+                    continue
+                
+                if request.content_frequency_max and content_frequency > request.content_frequency_max:
+                    logger.info(f"Channel {channel_details['channel_title']} filtered out by high content frequency: {content_frequency} videos/week (maximum: {request.content_frequency_max})")
+                    continue
+                
+                logger.info(f"Channel {channel_details['channel_title']} passed filters - Subscribers: {subscriber_count}, Frequency: {content_frequency} videos/week")
+                
                 # Create channel object
                 channel = Channel(
                     channel_id=channel_id,
