@@ -481,6 +481,68 @@ async def scrape_channel_about_page(channel_id: str) -> tuple[Optional[str], Opt
     
     return None, None
 
+async def enhanced_email_extraction(channel_url: str, channel_title: str) -> Optional[str]:
+    """Enhanced email extraction using multiple strategies"""
+    try:
+        # Strategy 1: Try scraping the channel about page with different approaches
+        channel_id = channel_url.split('/')[-1] if '/' in channel_url else channel_url
+        
+        # Use the existing scrape_channel_about_page function
+        email, _ = await scrape_channel_about_page(channel_id)
+        if email:
+            return email
+        
+        # Strategy 2: Try alternative URL formats and social media links
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            )
+            page = await context.new_page()
+            
+            # Try different URL variations
+            urls_to_try = [
+                f"https://www.youtube.com/c/{channel_title.replace(' ', '')}/about",
+                f"https://www.youtube.com/{channel_title.replace(' ', '')}/about",
+                channel_url + "/about" if not channel_url.endswith("/about") else channel_url
+            ]
+            
+            for url in urls_to_try:
+                try:
+                    await page.goto(url, wait_until="networkidle", timeout=20000)
+                    await page.wait_for_timeout(2000)
+                    
+                    # Look for email patterns in page content
+                    content = await page.content()
+                    soup = BeautifulSoup(content, 'html.parser')
+                    text_content = soup.get_text()
+                    
+                    # Extract email from text
+                    email = extract_email_from_text(text_content)
+                    if email:
+                        await browser.close()
+                        return email
+                        
+                    # Look for social media links that might contain emails
+                    links = soup.find_all('a', href=True)
+                    for link in links:
+                        href = link['href']
+                        if any(domain in href for domain in ['instagram.com', 'twitter.com', 'facebook.com']):
+                            # Could potentially scrape these for contact info, but for now skip
+                            pass
+                            
+                except Exception as url_error:
+                    logger.debug(f"Failed to scrape {url}: {url_error}")
+                    continue
+            
+            await browser.close()
+        
+        return None
+        
+    except Exception as e:
+        logger.error(f"Enhanced email extraction error for {channel_title}: {e}")
+        return None
+
 async def get_channel_details(channel_id: str):
     """Get detailed channel information"""
     try:
