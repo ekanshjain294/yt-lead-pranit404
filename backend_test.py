@@ -130,8 +130,21 @@ class BackendTester:
                             logger.info("✅ Lead generation completed successfully")
                             self.test_results["api_endpoints"]["details"].append("Processing status: PASS (completed)")
                             self.test_results["youtube_api_integration"]["status"] = "pass" if channels_discovered > 0 else "fail"
-                            self.test_results["email_extraction"]["status"] = "pass" if emails_found > 0 else "fail"
+                            self.test_results["playwright_email_extraction"]["status"] = "pass" if emails_found > 0 else "fail"
                             self.test_results["smtp_email_sending"]["status"] = "pass" if emails_sent > 0 else "fail"
+                            
+                            # Test email extraction improvements
+                            if emails_found > 0:
+                                improvement_ratio = emails_found / max(1, channels_processed)
+                                if improvement_ratio > 0.1:  # Expect >10% email discovery rate with Playwright
+                                    self.test_results["playwright_email_extraction"]["details"].append(f"✅ IMPROVED: {improvement_ratio:.1%} email discovery rate with Playwright")
+                                    self.test_results["email_extraction_improvements"]["status"] = "pass"
+                                else:
+                                    self.test_results["email_extraction_improvements"]["details"].append(f"⚠️ Low email discovery rate: {improvement_ratio:.1%}")
+                                    self.test_results["email_extraction_improvements"]["status"] = "questionable"
+                            else:
+                                self.test_results["email_extraction_improvements"]["status"] = "fail"
+                                self.test_results["email_extraction_improvements"]["details"].append("❌ No emails extracted with new Playwright approach")
                             return data
                         elif status == "failed":
                             logger.error("❌ Lead generation failed")
