@@ -119,15 +119,18 @@ backend:
 
   - task: "Email Extraction & Web Scraping"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Email extraction via regex from YouTube channel about pages implemented. Needs testing with real channels."
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE: Web scraping fails because YouTube about pages are JavaScript-rendered. Current HTTP-only approach only retrieves basic HTML skeleton, not actual channel content. All test channels returned generic footer content instead of channel-specific data. Requires browser automation (Selenium/Playwright) or YouTube API alternative for email extraction."
 
   - task: "AI-Powered Outreach Email Generation"
     implemented: true
