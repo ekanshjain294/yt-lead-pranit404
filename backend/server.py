@@ -153,6 +153,38 @@ class ProcessingStatus(BaseModel):
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Authentication Models
+class UserCreate(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
+    full_name: Optional[str] = None
+
+class UserResponse(BaseModel):
+    id: str
+    username: str
+    email: str
+    full_name: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime
+
+class User(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    username: str
+    email: str
+    hashed_password: str
+    full_name: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class EmailExtractionRequest(BaseModel):
+    channel_id: str
+    recaptcha_response: str
+
 # Utility Functions
 async def send_discord_notification(message: str):
     """Send notification to Discord webhook"""
