@@ -9,6 +9,12 @@ function App() {
   const [keywords, setKeywords] = useState(['crypto trading', 'day trading']);
   const [maxVideos, setMaxVideos] = useState(2000);
   const [maxChannels, setMaxChannels] = useState(500);
+  // Subscriber range (default: Small 10K-100K + Medium 100K-1M)
+  const [subscriberMin, setSubscriberMin] = useState(10000);
+  const [subscriberMax, setSubscriberMax] = useState(1000000);
+  // Content frequency (default: Weekly ~1-2 videos per week)
+  const [contentFrequencyMin, setContentFrequencyMin] = useState(0.14);
+  const [contentFrequencyMax, setContentFrequencyMax] = useState(2.0);
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState(null);
   const [currentStatusId, setCurrentStatusId] = useState(null);
