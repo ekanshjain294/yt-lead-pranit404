@@ -842,6 +842,7 @@ async def process_lead_generation(status_id: str, request: LeadGenerationRequest
                     channel_url=f"https://youtube.com/channel/{channel_id}",
                     subscriber_count=channel_details['subscriber_count'],
                     video_count=channel_details['video_count'],
+                    content_frequency_weekly=content_frequency,
                     keywords_found_in=[video['keyword'] for video in channel_info['videos']],
                     processing_timestamp=datetime.now(timezone.utc)
                 )
