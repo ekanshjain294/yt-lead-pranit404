@@ -127,6 +127,9 @@ function App() {
             </h3>
             <p className="text-sm text-gray-600">
               {lead.subscriber_count?.toLocaleString()} subscribers • {lead.video_count} videos
+              {lead.content_frequency_weekly && (
+                <span> • {lead.content_frequency_weekly} videos/week</span>
+              )}
             </p>
           </div>
           <div className="flex flex-col items-end space-y-1">
