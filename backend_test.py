@@ -32,15 +32,20 @@ class BackendTester:
         self.session = None
         self.test_results = {
             "youtube_api_integration": {"status": "not_tested", "details": []},
-            "playwright_email_extraction": {"status": "not_tested", "details": []},  # Updated focus
-            "email_extraction_improvements": {"status": "not_tested", "details": []},  # New test
+            "subscriber_range_filtering": {"status": "not_tested", "details": []},  # NEW: Test subscriber filtering
+            "content_frequency_filtering": {"status": "not_tested", "details": []},  # NEW: Test content frequency filtering
+            "content_frequency_calculation": {"status": "not_tested", "details": []},  # NEW: Test frequency calculation
+            "channel_filtering_logic": {"status": "not_tested", "details": []},  # NEW: Test combined filtering
+            "data_storage_with_frequency": {"status": "not_tested", "details": []},  # NEW: Test data storage
+            "playwright_email_extraction": {"status": "not_tested", "details": []},
+            "email_extraction_improvements": {"status": "not_tested", "details": []},
             "ai_email_generation": {"status": "not_tested", "details": []},
             "smtp_email_sending": {"status": "not_tested", "details": []},
             "mongodb_operations": {"status": "not_tested", "details": []},
             "content_analysis": {"status": "not_tested", "details": []},
             "discord_notifications": {"status": "not_tested", "details": []},
             "api_endpoints": {"status": "not_tested", "details": []},
-            "end_to_end_workflow": {"status": "not_tested", "details": []}  # New comprehensive test
+            "end_to_end_workflow": {"status": "not_tested", "details": []}
         }
         self.processing_status_id = None
 
