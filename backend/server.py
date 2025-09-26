@@ -109,6 +109,7 @@ class Channel(BaseModel):
     activity_level: str = "unknown"
     quality_score: float = 0.0
     content_consistency: str = "unknown"
+    content_frequency_weekly: float = 0.0  # Videos per week
     about_page_content: Optional[str] = None
     comments_analyzed: int = 0
     top_comment: Optional[str] = None
