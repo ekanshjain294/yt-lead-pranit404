@@ -419,6 +419,82 @@ async def get_channel_videos(channel_id: str, max_results: int = 3):
         logger.error(f"Error getting videos for channel {channel_id}: {e}")
         return []
 
+async def calculate_content_frequency(channel_id: str) -> float:
+    """Calculate content frequency in videos per week based on recent uploads"""
+    try:
+        youtube = get_youtube_service()
+        
+        # Get uploads playlist
+        request = youtube.channels().list(
+            part="contentDetails",
+            id=channel_id
+        )
+        
+        response = request.execute()
+        items = response.get('items', [])
+        
+        if not items:
+            return 0.0
+            
+        uploads_playlist = items[0]['contentDetails']['relatedPlaylists']['uploads']
+        
+        # Get recent videos (up to 50 for analysis)
+        request = youtube.playlistItems().list(
+            part="snippet",
+            playlistId=uploads_playlist,
+            maxResults=50
+        )
+        
+        response = request.execute()
+        videos = response.get('items', [])
+        
+        if len(videos) < 2:
+            return 0.0
+        
+        # Parse publication dates and calculate frequency
+        from dateutil import parser
+        publish_dates = []
+        
+        for video in videos:
+            pub_date_str = video.get('snippet', {}).get('publishedAt', '')
+            if pub_date_str:
+                try:
+                    pub_date = parser.parse(pub_date_str)
+                    publish_dates.append(pub_date)
+                except:
+                    continue
+        
+        if len(publish_dates) < 2:
+            return 0.0
+        
+        # Sort dates (newest first)
+        publish_dates.sort(reverse=True)
+        
+        # Calculate average time between uploads (in days)
+        total_days = 0
+        intervals = 0
+        
+        for i in range(len(publish_dates) - 1):
+            time_diff = publish_dates[i] - publish_dates[i + 1]
+            total_days += time_diff.total_seconds() / (24 * 3600)
+            intervals += 1
+        
+        if intervals == 0:
+            return 0.0
+        
+        avg_days_between_uploads = total_days / intervals
+        
+        # Convert to videos per week
+        if avg_days_between_uploads > 0:
+            videos_per_week = 7.0 / avg_days_between_uploads
+            return round(videos_per_week, 2)
+        
+        return 0.0
+        
+    except Exception as e:
+        logger.error(f"Error calculating content frequency for channel {channel_id}: {e}")
+        return 0.0
+
 async def get_video_comments(video_id: str, max_results: int = 100):
     """Get comments for a video"""
     try:
