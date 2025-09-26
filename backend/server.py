@@ -26,6 +26,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 import requests
 from urllib.parse import urlparse, parse_qs
 import html2text
+from playwright.async_api import async_playwright
+from bs4 import BeautifulSoup
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
