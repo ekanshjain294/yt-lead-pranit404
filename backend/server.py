@@ -160,36 +160,57 @@ async def search_youtube_videos(keyword: str, max_results: int = 50):
         videos = []
         next_page_token = None
         
+        logger.info(f"Starting YouTube search for keyword: '{keyword}', max_results: {max_results}")
+        
         while len(videos) < max_results:
-            request = youtube.search().list(
-                part="snippet",
-                q=keyword,
-                type="video",
-                maxResults=min(50, max_results - len(videos)),
-                pageToken=next_page_token,
-                order="relevance",
-                publishedAfter="2023-01-01T00:00:00Z"
-            )
-            
-            response = request.execute()
-            
-            for item in response.get('items', []):
-                video_data = {
-                    'videoId': item['id']['videoId'],
-                    'title': item['snippet']['title'],
-                    'channelId': item['snippet']['channelId'],
-                    'channelTitle': item['snippet']['channelTitle'],
-                    'publishedAt': item['snippet']['publishedAt'],
-                    'description': item['snippet']['description'][:500],
-                    'keyword': keyword
-                }
-                videos.append(video_data)
-            
-            next_page_token = response.get('nextPageToken')
-            if not next_page_token:
-                break
+            try:
+                request = youtube.search().list(
+                    part="snippet",
+                    q=keyword,
+                    type="video",
+                    maxResults=min(50, max_results - len(videos)),
+                    pageToken=next_page_token,
+                    order="relevance",
+                    publishedAfter="2022-01-01T00:00:00Z"  # Extended date range
+                )
                 
+                response = request.execute()
+                logger.info(f"YouTube API response: {len(response.get('items', []))} videos found")
+                
+                for item in response.get('items', []):
+                    video_data = {
+                        'videoId': item['id']['videoId'],
+                        'title': item['snippet']['title'],
+                        'channelId': item['snippet']['channelId'],
+                        'channelTitle': item['snippet']['channelTitle'],
+                        'publishedAt': item['snippet']['publishedAt'],
+                        'description': item['snippet']['description'][:500],
+                        'keyword': keyword
+                    }
+                    videos.append(video_data)
+                
+                next_page_token = response.get('nextPageToken')
+                if not next_page_token:
+                    break
+                    
+            except Exception as api_error:
+                logger.error(f"YouTube API error for '{keyword}': {api_error}")
+                # Try next API key
+                global current_key_index
+                current_key_index = (current_key_index + 1) % len(YOUTUBE_API_KEYS)
+                logger.info(f"Switched to API key index: {current_key_index}")
+                
+                if current_key_index == 0:  # All keys tried
+                    logger.error("All YouTube API keys exhausted")
+                    break
+                    
+                # Retry with new key
+                youtube = get_youtube_service()
+                continue
+                
+        logger.info(f"Final result: {len(videos)} videos found for keyword '{keyword}'")
         return videos
+        
     except Exception as e:
         logger.error(f"Error searching YouTube videos for '{keyword}': {e}")
         return []
