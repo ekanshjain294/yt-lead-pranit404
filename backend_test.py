@@ -26,13 +26,15 @@ class BackendTester:
         self.session = None
         self.test_results = {
             "youtube_api_integration": {"status": "not_tested", "details": []},
-            "email_extraction": {"status": "not_tested", "details": []},
+            "playwright_email_extraction": {"status": "not_tested", "details": []},  # Updated focus
+            "email_extraction_improvements": {"status": "not_tested", "details": []},  # New test
             "ai_email_generation": {"status": "not_tested", "details": []},
             "smtp_email_sending": {"status": "not_tested", "details": []},
             "mongodb_operations": {"status": "not_tested", "details": []},
             "content_analysis": {"status": "not_tested", "details": []},
             "discord_notifications": {"status": "not_tested", "details": []},
-            "api_endpoints": {"status": "not_tested", "details": []}
+            "api_endpoints": {"status": "not_tested", "details": []},
+            "end_to_end_workflow": {"status": "not_tested", "details": []}  # New comprehensive test
         }
         self.processing_status_id = None
 
