@@ -83,6 +83,18 @@ GEMINI_API_KEY = "AIzaSyDO7g9pBST5_856x6PkXilLVhMqYtCK2J0"
 GOOGLE_CLIENT_ID = "304595221220-rj66fpkfj3n4ptvneq7pnmg9va7bo3q7.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET = "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"
 
+# Authentication Configuration
+SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "your-secret-key-change-this-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+RECAPTCHA_SECRET_KEY = os.environ.get("RECAPTCHA_SECRET_KEY", "")
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
+
 # Pydantic Models
 class LeadGenerationRequest(BaseModel):
     keywords: List[str]
