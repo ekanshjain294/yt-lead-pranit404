@@ -54,7 +54,11 @@ function App() {
       const response = await axios.post(`${API}/lead-generation/start`, {
         keywords,
         max_videos_per_keyword: maxVideos,
-        max_channels: maxChannels
+        max_channels: maxChannels,
+        subscriber_min: subscriberMin,
+        subscriber_max: subscriberMax,
+        content_frequency_min: contentFrequencyMin,
+        content_frequency_max: contentFrequencyMax
       });
       
       setCurrentStatusId(response.data.id);
