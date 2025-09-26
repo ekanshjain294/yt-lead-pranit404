@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 # Test Configuration
 BASE_URL = "https://discovery-mailer.preview.emergentagent.com/api"
-TEST_KEYWORDS = ["crypto trading", "investment tips"]
-MAX_VIDEOS_PER_KEYWORD = 50  # Reduced for testing
-MAX_CHANNELS = 10  # Reduced for testing
+TEST_KEYWORDS = ["investment tips", "trading signals"]  # Updated as per review request
+MAX_VIDEOS_PER_KEYWORD = 25  # As per review request
+MAX_CHANNELS = 5  # As per review request
 
 class BackendTester:
     def __init__(self):
