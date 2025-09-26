@@ -207,27 +207,108 @@ def extract_email_from_text(text: str) -> Optional[str]:
     return None
 
 async def scrape_channel_about_page(channel_id: str) -> tuple[Optional[str], Optional[str]]:
-    """Scrape channel about page for email and content"""
+    """Scrape channel about page for email and content using Playwright"""
     try:
-        about_url = f"https://www.youtube.com/channel/{channel_id}/about"
+        # Try both URL formats for YouTube channels
+        urls_to_try = [
+            f"https://www.youtube.com/channel/{channel_id}/about",
+            f"https://www.youtube.com/@{channel_id}/about"  # Handle format
+        ]
         
-        async with aiohttp.ClientSession() as session:
-            async with session.get(about_url) as response:
-                if response.status == 200:
-                    html_content = await response.text()
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
+            context = await browser.new_context(
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            )
+            page = await context.new_page()
+            
+            for about_url in urls_to_try:
+                try:
+                    logger.info(f"Trying to scrape: {about_url}")
                     
-                    # Convert HTML to plain text
-                    h = html2text.HTML2Text()
-                    h.ignore_links = True
-                    text_content = h.handle(html_content)
+                    # Navigate to the about page
+                    await page.goto(about_url, wait_until="networkidle", timeout=30000)
                     
-                    # Extract email
+                    # Wait for content to load
+                    await page.wait_for_timeout(3000)
+                    
+                    # Get page content
+                    content = await page.content()
+                    
+                    # Parse with BeautifulSoup
+                    soup = BeautifulSoup(content, 'html.parser')
+                    text_content = soup.get_text()
+                    
+                    # Look for email in the page content
                     email = extract_email_from_text(text_content)
                     
-                    return email, text_content[:1000]  # Return first 1000 chars
-                    
+                    if email or "About" in content:
+                        # Success - found either email or valid about page
+                        await browser.close()
+                        return email, text_content[:1000]
+                        
+                except Exception as url_error:
+                    logger.warning(f"Failed to scrape {about_url}: {url_error}")
+                    continue
+            
+            await browser.close()
+            
     except Exception as e:
         logger.error(f"Error scraping about page for channel {channel_id}: {e}")
+    
+    # Fallback: Try to get channel details from YouTube API for custom URL
+    try:
+        youtube = get_youtube_service()
+        request = youtube.channels().list(
+            part="snippet",
+            id=channel_id
+        )
+        response = request.execute()
+        items = response.get('items', [])
+        
+        if items:
+            snippet = items[0].get('snippet', {})
+            description = snippet.get('description', '')
+            custom_url = snippet.get('customUrl', '')
+            
+            # Try to extract email from description
+            email = extract_email_from_text(description)
+            
+            if email:
+                logger.info(f"Found email in channel description: {email}")
+                return email, description[:1000]
+                
+            # If no email but has custom URL, try that format
+            if custom_url:
+                custom_handle = custom_url.replace('/', '').replace('@', '')
+                try:
+                    async with async_playwright() as p:
+                        browser = await p.chromium.launch(headless=True)
+                        context = await browser.new_context()
+                        page = await context.new_page()
+                        
+                        about_url = f"https://www.youtube.com/@{custom_handle}/about"
+                        await page.goto(about_url, wait_until="networkidle", timeout=30000)
+                        await page.wait_for_timeout(3000)
+                        
+                        content = await page.content()
+                        soup = BeautifulSoup(content, 'html.parser')
+                        text_content = soup.get_text()
+                        
+                        email = extract_email_from_text(text_content)
+                        
+                        await browser.close()
+                        
+                        if email:
+                            return email, text_content[:1000]
+                            
+                except Exception as custom_error:
+                    logger.warning(f"Failed to scrape custom URL {custom_handle}: {custom_error}")
+            
+            return None, description[:1000]
+            
+    except Exception as api_error:
+        logger.error(f"Error getting channel details from API: {api_error}")
     
     return None, None
 
