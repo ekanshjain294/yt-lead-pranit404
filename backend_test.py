@@ -77,14 +77,19 @@ class BackendTester:
             return False
 
     async def test_lead_generation_start(self) -> Optional[str]:
-        """Test starting lead generation process"""
+        """Test starting lead generation process with new filtering parameters"""
         try:
-            logger.info("Testing lead generation start endpoint...")
+            logger.info("Testing lead generation start endpoint with new filtering parameters...")
             
             payload = {
                 "keywords": TEST_KEYWORDS,
                 "max_videos_per_keyword": MAX_VIDEOS_PER_KEYWORD,
-                "max_channels": MAX_CHANNELS
+                "max_channels": MAX_CHANNELS,
+                # NEW: Test new filtering parameters
+                "subscriber_min": DEFAULT_SUBSCRIBER_MIN,
+                "subscriber_max": DEFAULT_SUBSCRIBER_MAX,
+                "content_frequency_min": DEFAULT_CONTENT_FREQUENCY_MIN,
+                "content_frequency_max": DEFAULT_CONTENT_FREQUENCY_MAX
             }
             
             async with self.session.post(
