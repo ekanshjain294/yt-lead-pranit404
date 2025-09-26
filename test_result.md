@@ -213,6 +213,30 @@ backend:
         agent: "testing"
         comment: "✅ VERIFIED: Discord webhook integration working. Webhook URL is accessible and properly configured. Notifications are sent during lead generation process as evidenced by successful API responses and proper webhook endpoint connectivity."
 
+  - task: "Subscriber Range Filtering"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added subscriber range filtering with custom min/max values. Default range: 10K-1M subscribers (Small + Medium channels). Filters applied during channel discovery process."
+
+  - task: "Content Frequency Filtering"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added content frequency analysis and filtering based on videos per week calculation. Default minimum: 0.14 videos/week (~1 video/week). Analyzes recent uploads to calculate posting frequency."
+
 frontend:
   - task: "Lead Generation Interface"
     implemented: true
