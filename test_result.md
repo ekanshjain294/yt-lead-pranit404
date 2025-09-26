@@ -274,6 +274,18 @@ frontend:
         agent: "main"
         comment: "Live status polling showing channels discovered, processed, emails found, and emails sent with progress indicators."
 
+  - task: "Subscriber & Content Frequency Filter UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added filtering UI controls for subscriber range (min/max) and content frequency (min/max videos per week). Default values: 10K-1M subscribers, 0.14-2.0 videos/week. Displays content frequency in lead cards."
+
 metadata:
   created_by: "main_agent"
   version: "1.0"
