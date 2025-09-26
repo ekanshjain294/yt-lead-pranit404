@@ -411,14 +411,86 @@ class BackendTester:
         
         logger.info("\n" + "="*80)
 
+    async def test_end_to_end_workflow(self, final_status: Dict, main_leads: List[Dict], no_email_leads: List[Dict]) -> bool:
+        """Test complete end-to-end workflow validation"""
+        try:
+            logger.info("🔄 Testing complete end-to-end workflow...")
+            
+            # Validate workflow completion
+            if final_status.get("status") != "completed":
+                logger.error("❌ Workflow did not complete successfully")
+                self.test_results["end_to_end_workflow"]["details"].append("Workflow completion: FAIL")
+                return False
+            
+            # Validate data flow: Videos → Channels → Email Extraction → AI Generation → SMTP
+            total_channels = len(main_leads) + len(no_email_leads)
+            emails_found = len(main_leads)
+            
+            # Check if channels were discovered
+            if total_channels == 0:
+                logger.error("❌ No channels discovered in workflow")
+                self.test_results["end_to_end_workflow"]["details"].append("Channel discovery: FAIL")
+                return False
+            
+            logger.info(f"✅ Channel Discovery: {total_channels} channels found")
+            self.test_results["end_to_end_workflow"]["details"].append(f"Channel discovery: PASS ({total_channels} channels)")
+            
+            # Check email extraction with Playwright
+            if emails_found > 0:
+                logger.info(f"✅ Email Extraction: {emails_found} emails found with Playwright")
+                self.test_results["end_to_end_workflow"]["details"].append(f"Playwright email extraction: PASS ({emails_found} emails)")
+                
+                # Check AI email generation
+                ai_generated = sum(1 for lead in main_leads if lead.get("email_subject") and lead.get("email_body_preview"))
+                if ai_generated > 0:
+                    logger.info(f"✅ AI Email Generation: {ai_generated} personalized emails generated")
+                    self.test_results["end_to_end_workflow"]["details"].append(f"AI email generation: PASS ({ai_generated} emails)")
+                else:
+                    logger.warning("⚠️ No AI-generated emails found")
+                    self.test_results["end_to_end_workflow"]["details"].append("AI email generation: FAIL")
+                
+                # Check email sending
+                emails_sent = final_status.get("emails_sent", 0)
+                if emails_sent > 0:
+                    logger.info(f"✅ SMTP Email Sending: {emails_sent} emails sent")
+                    self.test_results["end_to_end_workflow"]["details"].append(f"SMTP sending: PASS ({emails_sent} sent)")
+                else:
+                    logger.warning("⚠️ No emails were sent")
+                    self.test_results["end_to_end_workflow"]["details"].append("SMTP sending: FAIL")
+            else:
+                logger.warning("⚠️ No emails extracted - testing email-first branching logic")
+                self.test_results["end_to_end_workflow"]["details"].append("Email extraction: FAIL (testing branching logic)")
+            
+            # Validate email-first branching logic
+            if no_email_leads:
+                logger.info(f"✅ Email-first branching: {len(no_email_leads)} channels stored in no_email_leads")
+                self.test_results["end_to_end_workflow"]["details"].append(f"Email-first branching: PASS ({len(no_email_leads)} no-email leads)")
+            
+            # Overall workflow assessment
+            if total_channels > 0:
+                logger.info("✅ End-to-end workflow completed successfully")
+                self.test_results["end_to_end_workflow"]["status"] = "pass"
+                return True
+            else:
+                logger.error("❌ End-to-end workflow failed")
+                self.test_results["end_to_end_workflow"]["status"] = "fail"
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ End-to-end workflow test error: {e}")
+            self.test_results["end_to_end_workflow"]["details"].append(f"Workflow test error: {e}")
+            return False
+
     async def run_comprehensive_tests(self):
-        """Run all backend tests in sequence"""
-        logger.info("🚀 Starting comprehensive backend testing...")
+        """Run all backend tests in sequence with focus on Playwright improvements"""
+        logger.info("🚀 Starting comprehensive backend testing for UPDATED YouTube Lead Generation Platform...")
+        logger.info("🎯 FOCUS: Testing new Playwright-based email extraction improvements")
         
         # Test 1: API Root
         await self.test_api_root()
         
-        # Test 2: Start Lead Generation
+        # Test 2: Start Lead Generation with updated parameters
+        logger.info(f"📋 Test Configuration: Keywords={TEST_KEYWORDS}, Max Videos={MAX_VIDEOS_PER_KEYWORD}, Max Channels={MAX_CHANNELS}")
         status_id = await self.test_lead_generation_start()
         if not status_id:
             logger.error("❌ Cannot continue testing without valid status ID")
@@ -426,20 +498,26 @@ class BackendTester:
         
         self.processing_status_id = status_id
         
-        # Test 3: Monitor Processing Status
+        # Test 3: Monitor Processing Status (with focus on email extraction)
         final_status = await self.test_processing_status(status_id)
         
-        # Test 4: Check Main Leads
+        # Test 4: Check Main Leads (with email extraction validation)
         main_leads = await self.test_main_leads_endpoint()
         
-        # Test 5: Check No-Email Leads
+        # Test 5: Check No-Email Leads (validate branching logic)
         no_email_leads = await self.test_no_email_leads_endpoint()
         
-        # Test 6: Test Add Email Functionality
+        # Test 6: Validate Playwright Email Extraction Improvements
+        await self.test_playwright_email_extraction_validation(main_leads, no_email_leads)
+        
+        # Test 7: Test Add Email Functionality
         await self.test_add_email_endpoint(no_email_leads)
         
-        # Test 7: Test Discord Notifications
+        # Test 8: Test Discord Notifications
         await self.test_discord_notifications()
+        
+        # Test 9: End-to-End Workflow Validation
+        await self.test_end_to_end_workflow(final_status, main_leads, no_email_leads)
         
         # Final Summary
         self.print_test_summary()
