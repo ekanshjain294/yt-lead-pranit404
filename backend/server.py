@@ -937,6 +937,144 @@ async def send_email(to_email: str, subject: str, html_body: str, plain_body: st
         return False
 
 # API Routes
+
+# Authentication Routes
+@api_router.post("/register", response_model=UserResponse)
+async def register_user(user: UserCreate):
+    # Check if username already exists
+    if await get_user_by_username(user.username):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already registered"
+        )
+    
+    # Check if email already exists
+    if await get_user_by_email(user.email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    # Create user
+    new_user = await create_user(user)
+    
+    return UserResponse(
+        id=new_user["id"],
+        username=new_user["username"],
+        email=new_user["email"],
+        full_name=new_user["full_name"],
+        is_active=new_user["is_active"],
+        created_at=new_user["created_at"]
+    )
+
+@api_router.post("/token", response_model=Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = await authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]},
+        expires_delta=access_token_expires
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@api_router.get("/users/me", response_model=UserResponse)
+async def read_users_me(current_user: dict = Depends(get_current_active_user)):
+    return UserResponse(
+        id=current_user["id"],
+        username=current_user["username"],
+        email=current_user["email"],
+        full_name=current_user["full_name"],
+        is_active=current_user["is_active"],
+        created_at=current_user["created_at"]
+    )
+
+# Enhanced Email Extraction Route (Protected with Auth + reCAPTCHA)
+@api_router.post("/extract-email")
+async def extract_email_address(
+    request: EmailExtractionRequest,
+    current_user: dict = Depends(get_current_active_user)
+):
+    """Extract email address with reCAPTCHA verification (requires authentication)"""
+    
+    # Verify reCAPTCHA
+    if not await verify_recaptcha(request.recaptcha_response):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="reCAPTCHA verification failed"
+        )
+    
+    try:
+        # Find the channel
+        channel_doc = await db.main_leads.find_one({"channel_id": request.channel_id})
+        if not channel_doc:
+            channel_doc = await db.no_email_leads.find_one({"channel_id": request.channel_id})
+        
+        if not channel_doc:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Channel not found"
+            )
+        
+        # If email already exists, return it
+        if channel_doc.get("email"):
+            return {
+                "email": channel_doc["email"],
+                "extraction_method": "cached",
+                "message": "Email already available"
+            }
+        
+        # Attempt enhanced email extraction using Playwright
+        extracted_email = await enhanced_email_extraction(
+            channel_doc["channel_url"], 
+            channel_doc["channel_title"]
+        )
+        
+        if extracted_email:
+            # Update the channel with the extracted email
+            update_data = {
+                "email": extracted_email,
+                "email_status": "extracted_enhanced",
+                "processing_timestamp": datetime.now(timezone.utc)
+            }
+            
+            # Move to main_leads if it was in no_email_leads
+            if channel_doc.get("email_status") == "not_found":
+                await db.no_email_leads.delete_one({"channel_id": request.channel_id})
+                channel_doc.update(update_data)
+                await db.main_leads.insert_one(channel_doc)
+            else:
+                await db.main_leads.update_one(
+                    {"channel_id": request.channel_id},
+                    {"$set": update_data}
+                )
+            
+            return {
+                "email": extracted_email,
+                "extraction_method": "enhanced_playwright",
+                "message": "Email successfully extracted"
+            }
+        else:
+            return {
+                "email": None,
+                "extraction_method": "enhanced_playwright",
+                "message": "No email found despite enhanced extraction"
+            }
+            
+    except Exception as e:
+        logger.error(f"Enhanced email extraction error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Email extraction failed"
+        )
+
 @api_router.post("/lead-generation/start", response_model=ProcessingStatus)
 async def start_lead_generation(request: LeadGenerationRequest, background_tasks: BackgroundTasks):
     """Start the lead generation process"""
