@@ -453,7 +453,6 @@ async def calculate_content_frequency(channel_id: str) -> float:
             return 0.0
         
         # Parse publication dates and calculate frequency
-        from dateutil import parser
         publish_dates = []
         
         for video in videos:
