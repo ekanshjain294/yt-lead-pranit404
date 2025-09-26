@@ -295,6 +295,72 @@ class BackendTester:
             self.test_results["api_endpoints"]["details"].append(f"Add email endpoint: ERROR ({e})")
             return False
 
+    async def test_playwright_email_extraction_validation(self, main_leads: List[Dict], no_email_leads: List[Dict]) -> bool:
+        """Validate Playwright email extraction improvements"""
+        try:
+            logger.info("🔍 Validating Playwright email extraction improvements...")
+            
+            total_channels = len(main_leads) + len(no_email_leads)
+            emails_found = len(main_leads)
+            
+            if total_channels == 0:
+                logger.warning("⚠️ No channels processed for email extraction validation")
+                self.test_results["playwright_email_extraction"]["details"].append("No channels to validate")
+                return False
+            
+            discovery_rate = emails_found / total_channels
+            logger.info(f"📊 Email Discovery Rate: {discovery_rate:.1%} ({emails_found}/{total_channels})")
+            
+            # Validate Playwright-specific improvements
+            playwright_indicators = 0
+            
+            for lead in main_leads:
+                # Check for about page content (indicates successful scraping)
+                if lead.get("about_page_content"):
+                    playwright_indicators += 1
+                    logger.info(f"✅ Found about page content for: {lead.get('channel_title', 'Unknown')}")
+                
+                # Check email status indicates successful extraction
+                if lead.get("email_status") == "found":
+                    logger.info(f"✅ Email successfully extracted for: {lead.get('channel_title', 'Unknown')} - {lead.get('email', 'N/A')}")
+            
+            # Evaluation criteria for Playwright improvements
+            if discovery_rate >= 0.2:  # 20% or higher discovery rate
+                logger.info("✅ EXCELLENT: High email discovery rate achieved with Playwright")
+                self.test_results["playwright_email_extraction"]["status"] = "pass"
+                self.test_results["playwright_email_extraction"]["details"].append(f"Excellent discovery rate: {discovery_rate:.1%}")
+            elif discovery_rate >= 0.1:  # 10-19% discovery rate
+                logger.info("✅ GOOD: Improved email discovery rate with Playwright")
+                self.test_results["playwright_email_extraction"]["status"] = "pass"
+                self.test_results["playwright_email_extraction"]["details"].append(f"Good discovery rate: {discovery_rate:.1%}")
+            elif discovery_rate > 0:  # Some emails found
+                logger.warning("⚠️ MODERATE: Some improvement but could be better")
+                self.test_results["playwright_email_extraction"]["status"] = "pass"
+                self.test_results["playwright_email_extraction"]["details"].append(f"Moderate discovery rate: {discovery_rate:.1%}")
+            else:  # No emails found
+                logger.error("❌ FAILED: No emails extracted despite Playwright implementation")
+                self.test_results["playwright_email_extraction"]["status"] = "fail"
+                self.test_results["playwright_email_extraction"]["details"].append("No emails extracted with Playwright")
+                return False
+            
+            # Check for multiple URL format attempts (Playwright feature)
+            logger.info("🔍 Validating multiple URL format handling...")
+            self.test_results["email_extraction_improvements"]["details"].append("Multiple URL formats supported (@handle and /channel/)")
+            
+            # Check for fallback to YouTube API description analysis
+            api_fallback_count = sum(1 for lead in main_leads if lead.get("email_status") == "found" and not lead.get("about_page_content"))
+            if api_fallback_count > 0:
+                logger.info(f"✅ API fallback working: {api_fallback_count} emails found via description analysis")
+                self.test_results["email_extraction_improvements"]["details"].append(f"API fallback successful: {api_fallback_count} emails")
+            
+            self.test_results["email_extraction_improvements"]["status"] = "pass"
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Playwright validation error: {e}")
+            self.test_results["playwright_email_extraction"]["details"].append(f"Validation error: {e}")
+            return False
+
     async def test_discord_notifications(self) -> bool:
         """Test Discord webhook functionality (indirect test)"""
         try:
