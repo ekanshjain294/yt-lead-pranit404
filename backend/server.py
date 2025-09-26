@@ -686,11 +686,15 @@ async def process_lead_generation(status_id: str, request: LeadGenerationRequest
         # Discover videos for each keyword
         for keyword in request.keywords:
             await send_discord_notification(f"🔍 Searching videos for keyword: {keyword}")
+            logger.info(f"Processing keyword: '{keyword}' with max {request.max_videos_per_keyword} videos")
             
             videos = await search_youtube_videos(keyword, request.max_videos_per_keyword)
+            logger.info(f"Found {len(videos)} videos for keyword '{keyword}'")
             all_videos.extend(videos)
             
             await asyncio.sleep(1)  # Rate limiting
+        
+        logger.info(f"Total videos discovered across all keywords: {len(all_videos)}")
         
         # Extract unique channels
         channels_dict = {}
